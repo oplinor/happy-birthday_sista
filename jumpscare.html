@@ -107,6 +107,7 @@
     let microphone;
     let hasBlown = false;
     let birthdayAudio;
+    let micStream;
 
     // Start button click handler
     startButton.addEventListener("click", () => {
@@ -152,13 +153,20 @@
 
     async function startMicrophone() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micStream = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false
+          } 
+        });
         
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
-        microphone = audioContext.createMediaStreamSource(stream);
+        microphone = audioContext.createMediaStreamSource(micStream);
         
-        analyser.fftSize = 256;
+        analyser.fftSize = 512;
+        analyser.smoothingTimeConstant = 0.3;
         microphone.connect(analyser);
         
         detectBlow();
@@ -186,7 +194,8 @@
         }
         let average = sum / bufferLength;
         
-        if (average > 80) {
+        // Lower threshold for better mobile detection
+        if (average > 60) {
           hasBlown = true;
           blowOutCandles();
         }
@@ -206,7 +215,10 @@
       cakeImage.alt = "Birthday cake without candles";
       info.textContent = "ហាប់ភីបឺសដេ🎉🎊㊗️🍾";
       
-      // Stop microphone
+      // Stop microphone stream
+      if (micStream) {
+        micStream.getTracks().forEach(track => track.stop());
+      }
       if (microphone) {
         microphone.disconnect();
       }
@@ -217,4 +229,3 @@
   </script>
 </body>
 </html>
-
