@@ -1,37 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet">
   <title>Blow the Candles</title>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
-    
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
-      padding: 0;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
       background: #fff;
     }
-    
+
     .start-screen {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
       width: 100%;
       height: 100vh;
-      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    
+
     .start-button {
       font-family: 'Kranky', cursive;
       font-size: clamp(20px, 5vw, 28px);
@@ -41,25 +37,15 @@
       padding: 20px 40px;
       border-radius: 50px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(255,105,180,.4);
     }
-    
-    .start-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba(255, 105, 180, 0.6);
-    }
-    
-    .start-button:active {
-      transform: scale(0.98);
-    }
-    
+
     video {
       width: 100%;
       max-width: 800px;
       display: none;
     }
-    
+
     .show {
       width: 100%;
       height: 100vh;
@@ -67,184 +53,154 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 20px;
     }
-    
+
     .image {
       width: 90%;
       max-width: 400px;
-      object-fit: contain;
     }
-    
+
     .info {
       margin-top: 20px;
       font-family: 'Kranky', cursive;
       color: #ffc0cb;
       font-size: clamp(16px, 4vw, 20px);
-      text-align: center;
-      padding: 10px;
     }
   </style>
 </head>
+
 <body>
-  <!-- Start screen to enable audio -->
+
   <div class="start-screen" id="startScreen">
-    <button class="start-button" id="startButton">🎂 ចុចមួយមោកូនពៅ! 🎂</button>
+    <button class="start-button" id="startButton">
+      🎂 ចុចមួយមោកូនពៅ! 🎂
+    </button>
   </div>
 
   <video id="jumpscareVideo" playsinline>
     <source src="jumpscare.mp4" type="video/mp4">
   </video>
+
   <div class="show" id="showDiv"></div>
 
-  <script>
-    const startScreen = document.getElementById("startScreen");
-    const startButton = document.getElementById("startButton");
-    const video = document.getElementById("jumpscareVideo");
-    const show = document.getElementById("showDiv");
-    let audioContext;
-    let analyser;
-    let microphone;
-    let hasBlown = false;
-    let birthdayAudio;
-    let micStream;
+<script>
+const startScreen = document.getElementById("startScreen");
+const startButton = document.getElementById("startButton");
+const video = document.getElementById("jumpscareVideo");
+const show = document.getElementById("showDiv");
 
-    // Start button click handler
-    startButton.addEventListener("click", () => {
-      startScreen.style.display = "none";
-      video.style.display = "block";
-      
-      // Play video WITH sound
-      video.muted = false;
-      video.volume = 1.0;
-      video.play().catch(err => console.log("Video play failed:", err));
-      
-      // Stop video after 3 seconds
-      setTimeout(() => {
-        video.pause();
-        video.currentTime = 0;
-      }, 3000);
-      
-      // Wait 3s, then show cake and start audio
-      setTimeout(() => {
-        video.style.display = "none";
-        show.style.display = "flex";
-        
-        // Create and configure audio
-        birthdayAudio = new Audio("happybirthgokgok.mp3");
-        birthdayAudio.loop = true;
-        birthdayAudio.volume = 1.0;
-        
-        // Play audio (will work because user clicked start button)
-        birthdayAudio.play().catch(err => {
-          console.log("Audio play failed:", err);
-        });
-        
-        const flame = document.createElement("img");
-        flame.src = "cakeFlame.png";
-        flame.className = "image";
-        flame.id = "cakeImage";
-        flame.alt = "Birthday cake with candles";
-        show.appendChild(flame);
+let audioContext, analyser, microphone, micStream;
+let hasBlown = false;
+let birthdayAudio;
 
-        const info = document.createElement("div");
-        info.className = "info";
-        info.textContent = "ផ្លុំទៀនប្រាដឺ";
-        show.appendChild(info);
+/* ================= START BUTTON ================= */
+startButton.addEventListener("click", () => {
+  startScreen.style.display = "none";
+  video.style.display = "block";
 
-        // Start listening to microphone
-        startMicrophone();
-      }, 3000);
-    });
+  video.muted = false;
+  video.volume = 1;
+  video.play();
 
-    async function startMicrophone() {
-      try {
-        micStream = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: false,
-            noiseSuppression: false,
-            autoGainControl: false
-          } 
-        });
-        
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioContext.createAnalyser();
-        microphone = audioContext.createMediaStreamSource(micStream);
-        
-        analyser.fftSize = 512;
-        analyser.smoothingTimeConstant = 0.3;
-        microphone.connect(analyser);
-        
-        detectBlow();
-      } catch (err) {
-        console.error("Microphone access denied:", err);
-        const info = document.querySelector(".info");
-        if (info) {
-          info.textContent = "Please allow microphone access to blow the candles!";
-        }
-      }
+  setTimeout(() => {
+    video.pause();
+    video.currentTime = 0;
+    video.style.display = "none";
+
+    show.style.display = "flex";
+
+    birthdayAudio = new Audio("happybirthgokgok.mp3");
+    birthdayAudio.loop = true;
+    birthdayAudio.play();
+
+    const cake = document.createElement("img");
+    cake.src = "cakeFlame.png";
+    cake.className = "image";
+    cake.id = "cakeImage";
+    show.appendChild(cake);
+
+    const info = document.createElement("div");
+    info.className = "info";
+    info.textContent = "ផ្លុំទៀនប្រាដឺ";
+    show.appendChild(info);
+
+    startMicrophone();
+  }, 3000);
+});
+
+/* ================= MICROPHONE ================= */
+async function startMicrophone() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 1024;
+
+    microphone = audioContext.createMediaStreamSource(micStream);
+    microphone.connect(analyser);
+
+    // delay to avoid mobile startup spike
+    setTimeout(detectBlow, 1000);
+
+  } catch (e) {
+    document.querySelector(".info").textContent =
+      "ចុច​ allow microphone access";
+  }
+}
+
+/* ================= BLOW DETECTION (RMS) ================= */
+function detectBlow() {
+  const bufferLength = analyser.fftSize;
+  const dataArray = new Uint8Array(bufferLength);
+  let blowStart = null;
+
+  function check() {
+    if (hasBlown) return;
+
+    analyser.getByteTimeDomainData(dataArray);
+
+    let sum = 0;
+    for (let i = 0; i < bufferLength; i++) {
+      const v = (dataArray[i] - 128) / 128;
+      sum += v * v;
     }
 
-    function detectBlow() {
-      const bufferLength = analyser.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      let maxVolumeDetected = 0;
-      
-      function check() {
-        if (hasBlown) return;
-        
-        analyser.getByteFrequencyData(dataArray);
-        
-        let sum = 0;
-        let max = 0;
-        for (let i = 0; i < bufferLength; i++) {
-          sum += dataArray[i];
-          if (dataArray[i] > max) max = dataArray[i];
-        }
-        let average = sum / bufferLength;
-        
-        // Track max volume for debugging
-        if (average > maxVolumeDetected) {
-          maxVolumeDetected = average;
-          console.log("Volume detected:", average.toFixed(2), "Max value:", max);
-        }
-        
-        // Higher threshold - 70 average or 150 peak
-        if (average >= 130 || max > 150) {
-          hasBlown = true;
-          blowOutCandles();
-        }
-        
-        requestAnimationFrame(check);
+    const rms = Math.sqrt(sum / bufferLength);
+    console.log("RMS:", rms.toFixed(3));
+
+    if (rms > 0.15) {
+      if (!blowStart) blowStart = performance.now();
+      if (performance.now() - blowStart > 300) {
+        hasBlown = true;
+        blowOutCandles();
+        return;
       }
-      
-      check();
+    } else {
+      blowStart = null;
     }
 
-    function blowOutCandles() {
-      const cakeImage = document.getElementById("cakeImage");
-      const info = document.querySelector(".info");
-      
-      // Change to cake without flame
-      cakeImage.src = "cakeNoFlame.png";
-      cakeImage.alt = "Birthday cake without candles";
-      info.textContent = "ហាប់ភីបឺសដេ🎉🎊㊗️🍾";
-      
-      // Stop microphone stream
-      if (micStream) {
-        micStream.getTracks().forEach(track => track.stop());
-      }
-      if (microphone) {
-        microphone.disconnect();
-      }
-      if (audioContext) {
-        audioContext.close();
-      }
-    }
-  </script>
+    requestAnimationFrame(check);
+  }
+
+  check();
+}
+
+/* ================= BLOW ACTION ================= */
+function blowOutCandles() {
+  const cake = document.getElementById("cakeImage");
+  const info = document.querySelector(".info");
+
+  cake.src = "cakeNoFlame.png";
+  info.textContent = "ហាប់ភីបឺសដេ🎉🎊🍾";
+
+  birthdayAudio.pause();
+
+  micStream.getTracks().forEach(t => t.stop());
+  microphone.disconnect();
+  audioContext.close();
+}
+</script>
+
 </body>
 </html>
-
-
-
-
