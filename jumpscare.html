@@ -203,8 +203,8 @@
           console.log("Volume detected:", average.toFixed(2), "Max value:", max);
         }
         
-        // Much lower threshold - try 30 for mobile
-        if (average > 30 || max > 100) {
+        // Adjusted threshold - 50 average or 120 peak
+        if (average > 50 || max > 120) {
           hasBlown = true;
           blowOutCandles();
         }
