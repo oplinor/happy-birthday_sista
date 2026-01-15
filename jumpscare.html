@@ -182,6 +182,7 @@
     function detectBlow() {
       const bufferLength = analyser.frequencyBinCount;
       const dataArray = new Uint8Array(bufferLength);
+      let maxVolumeDetected = 0;
       
       function check() {
         if (hasBlown) return;
@@ -189,13 +190,21 @@
         analyser.getByteFrequencyData(dataArray);
         
         let sum = 0;
+        let max = 0;
         for (let i = 0; i < bufferLength; i++) {
           sum += dataArray[i];
+          if (dataArray[i] > max) max = dataArray[i];
         }
         let average = sum / bufferLength;
         
-        // Lower threshold for better mobile detection
-        if (average > 60) {
+        // Track max volume for debugging
+        if (average > maxVolumeDetected) {
+          maxVolumeDetected = average;
+          console.log("Volume detected:", average.toFixed(2), "Max value:", max);
+        }
+        
+        // Much lower threshold - try 30 for mobile
+        if (average > 30 || max > 100) {
           hasBlown = true;
           blowOutCandles();
         }
