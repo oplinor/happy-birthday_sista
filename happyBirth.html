@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Caveat:wght@400..700&family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&family=Kranky&display=swap" rel="stylesheet">
+  <title>Happy Birthday</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      background: #fff;
+    }
+    
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .Loading {
+      font-family: Kranky, cursive;
+      font-size: clamp(18px, 5vw, 24px);
+      color: lightpink;
+      margin: 0;
+      text-align: center;
+    }
+    
+    #pic {
+      width: clamp(100px, 30vw, 150px);
+      max-width: 150px;
+      height: auto;
+      margin: 0;
+      animation: rotate 3s linear infinite;
+    }
+    
+    @keyframes rotate {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    .show {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      width: 100vw;
+      gap: 0;
+      padding: 20px;
+    }
+    
+    .show img {
+      max-width: 90vw;
+      height: auto;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="Loading">Loading...</div>
+    <img src="cookie.png" alt="Loading cookie" id="pic">
+  </div>
+  <div id="show" class="show"></div>
+
+  <script>
+    const all = document.querySelector(".container");
+    const show = document.getElementById("show");
+    
+    setTimeout(() => {
+      all.remove();
+    
+      const img = document.createElement("img");
+      img.src = "https://i.pinimg.com/736x/ff/ee/a5/ffeea5efd01c1d682b2d704ad1be0ec8.jpg";
+      img.alt = "Click the cookie";
+      show.appendChild(img);
+      
+      let currentWidth = Math.min(150, window.innerWidth * 0.4);
+      img.style.width = currentWidth + "px";
+
+      img.addEventListener("click", (e) => {
+        e.preventDefault();
+        currentWidth += Math.min(50, window.innerWidth * 0.13);
+        img.style.width = currentWidth + "px";
+
+        if (currentWidth >= Math.min(350, window.innerWidth * 0.85)) {
+          img.remove();
+          const boom = document.createElement("img");
+          boom.src = "https://i.pinimg.com/736x/ef/22/64/ef2264cb64a9eefeff1ccb353ffb4308.jpg";
+          boom.alt = "Explosion";
+          boom.style.width = Math.min(300, window.innerWidth * 0.8) + "px";
+
+          show.appendChild(boom);
+
+          setTimeout(() => {
+            boom.remove();
+            window.location.href = "jumpscare.html";
+          }, 3000);
+        }
+      });
+
+    }, 2000);
+  </script>
+</body>
+</html>
