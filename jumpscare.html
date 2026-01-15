@@ -93,13 +93,10 @@ let audioContext, analyser, microphone, micStream;
 let hasBlown = false;
 let birthdayAudio;
 
-/* ================= START BUTTON ================= */
+/* ================= START ================= */
 startButton.addEventListener("click", () => {
   startScreen.style.display = "none";
   video.style.display = "block";
-
-  video.muted = false;
-  video.volume = 1;
   video.play();
 
   setTimeout(() => {
@@ -128,25 +125,19 @@ startButton.addEventListener("click", () => {
   }, 3000);
 });
 
-/* ================= MICROPHONE ================= */
+/* ================= MIC ================= */
 async function startMicrophone() {
-  try {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioContext.createAnalyser();
-    analyser.fftSize = 1024;
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyser = audioContext.createAnalyser();
+  analyser.fftSize = 1024;
 
-    microphone = audioContext.createMediaStreamSource(micStream);
-    microphone.connect(analyser);
+  microphone = audioContext.createMediaStreamSource(micStream);
+  microphone.connect(analyser);
 
-    // Delay avoids mobile mic spike
-    setTimeout(detectBlow, 1000);
-
-  } catch (e) {
-    document.querySelector(".info").textContent =
-      "Please allow microphone access 🙏";
-  }
+  // delay to avoid mobile spike
+  setTimeout(detectBlow, 1000);
 }
 
 /* ================= BLOW DETECTION ================= */
@@ -169,8 +160,8 @@ function detectBlow() {
     const rms = Math.sqrt(sum / bufferLength);
     console.log("RMS:", rms.toFixed(3));
 
-    // 🔥 EASIER TO BLOW
-    if (rms > 0.12) {
+    // 🔥 VERY EASY TO BLOW
+    if (rms > 0.10) {
       if (!blowStart) blowStart = performance.now();
       if (performance.now() - blowStart > 200) {
         hasBlown = true;
@@ -187,16 +178,12 @@ function detectBlow() {
   check();
 }
 
-/* ================= BLOW RESULT ================= */
+/* ================= RESULT ================= */
 function blowOutCandles() {
-  const cake = document.getElementById("cakeImage");
-  const info = document.querySelector(".info");
-
-  cake.src = "cakeNoFlame.png";
-  info.textContent = "ហាប់ភីបឺសដេ🎉🎊🍾";
+  document.getElementById("cakeImage").src = "cakeNoFlame.png";
+  document.querySelector(".info").textContent = "ហាប់ភីបឺសដេ🎉🎊🍾";
 
   birthdayAudio.pause();
-
   micStream.getTracks().forEach(t => t.stop());
   microphone.disconnect();
   audioContext.close();
