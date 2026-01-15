@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet">
-  <title>Happy Birthday</title>
+  <title>Blow the Candles</title>
   <style>
     * {
       box-sizing: border-box;
@@ -22,15 +22,48 @@
       background: #fff;
     }
     
+    .start-screen {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100vh;
+      padding: 20px;
+    }
+    
+    .start-button {
+      font-family: 'Kranky', cursive;
+      font-size: clamp(20px, 5vw, 28px);
+      color: white;
+      background: linear-gradient(135deg, #ffc0cb, #ff69b4);
+      border: none;
+      padding: 20px 40px;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .start-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(255, 105, 180, 0.6);
+    }
+    
+    .start-button:active {
+      transform: scale(0.98);
+    }
+    
     video {
       width: 100%;
       max-width: 800px;
+      display: none;
     }
     
     .show {
       width: 100%;
       height: 100vh;
-      display: flex;
+      display: none;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -54,52 +87,68 @@
   </style>
 </head>
 <body>
-  <video id="jumpscareVideo" autoplay muted playsinline>
+  <!-- Start screen to enable audio -->
+  <div class="start-screen" id="startScreen">
+    <button class="start-button" id="startButton">🎂 Start Birthday Surprise! 🎂</button>
+  </div>
+
+  <video id="jumpscareVideo" playsinline>
     <source src="jumpscare.mp4" type="video/mp4">
   </video>
-  <div class="show"></div>
+  <div class="show" id="showDiv"></div>
 
   <script>
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
     const video = document.getElementById("jumpscareVideo");
-    const show = document.querySelector(".show");
+    const show = document.getElementById("showDiv");
     let audioContext;
     let analyser;
     let microphone;
     let hasBlown = false;
     let birthdayAudio;
 
-    // Play the video
-    video.play().catch(err => console.log("Video autoplay failed:", err));
-
-    // Wait for video to finish (4.5s), then show cake and start audio
-    setTimeout(() => {
-      video.remove();
+    // Start button click handler
+    startButton.addEventListener("click", () => {
+      startScreen.style.display = "none";
+      video.style.display = "block";
       
-      // Create and configure audio
-      birthdayAudio = new Audio("happybirthgokgok.mp3");
-      birthdayAudio.loop = true; // Loop the audio so it keeps playing
-      birthdayAudio.volume = 1.0;
+      // Play video WITH sound
+      video.muted = false;
+      video.volume = 1.0;
+      video.play().catch(err => console.log("Video play failed:", err));
       
-      // Play audio
-      birthdayAudio.play().catch(err => {
-        console.log("Audio autoplay blocked:", err);
-      });
-      
-      const flame = document.createElement("img");
-      flame.src = "cakeFlame.png";
-      flame.className = "image";
-      flame.id = "cakeImage";
-      flame.alt = "Birthday cake with candles";
-      show.appendChild(flame);
+      // Wait for video to finish (4.5s), then show cake and start audio
+      setTimeout(() => {
+        video.style.display = "none";
+        show.style.display = "flex";
+        
+        // Create and configure audio
+        birthdayAudio = new Audio("happybirthgokgok.mp3");
+        birthdayAudio.loop = true;
+        birthdayAudio.volume = 1.0;
+        
+        // Play audio (will work because user clicked start button)
+        birthdayAudio.play().catch(err => {
+          console.log("Audio play failed:", err);
+        });
+        
+        const flame = document.createElement("img");
+        flame.src = "cakeFlame.png";
+        flame.className = "image";
+        flame.id = "cakeImage";
+        flame.alt = "Birthday cake with candles";
+        show.appendChild(flame);
 
-      const info = document.createElement("div");
-      info.className = "info";
-      info.textContent = "ផ្លុំទៀនប្រាដឺ";
-      show.appendChild(info);
+        const info = document.createElement("div");
+        info.className = "info";
+        info.textContent = "ផ្លុំទៀនប្រាដឺ";
+        show.appendChild(info);
 
-      // Start listening to microphone
-      startMicrophone();
-    }, 4500);
+        // Start listening to microphone
+        startMicrophone();
+      }, 4500);
+    });
 
     async function startMicrophone() {
       try {
@@ -156,8 +205,6 @@
       cakeImage.src = "cakeNoFlame.png";
       cakeImage.alt = "Birthday cake without candles";
       info.textContent = "ហាប់ភីបឺសដេ🎉🎊㊗️🍾";
-      
-      // Keep audio playing (it will loop until page closes)
       
       // Stop microphone
       if (microphone) {
