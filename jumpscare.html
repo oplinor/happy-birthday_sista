@@ -119,7 +119,13 @@
       video.volume = 1.0;
       video.play().catch(err => console.log("Video play failed:", err));
       
-      // Wait for video to finish (4.5s), then show cake and start audio
+      // Stop video after 3 seconds
+      setTimeout(() => {
+        video.pause();
+        video.currentTime = 0;
+      }, 3000);
+      
+      // Wait 3s, then show cake and start audio
       setTimeout(() => {
         video.style.display = "none";
         show.style.display = "flex";
@@ -148,7 +154,7 @@
 
         // Start listening to microphone
         startMicrophone();
-      }, 4500);
+      }, 3000);
     });
 
     async function startMicrophone() {
@@ -204,7 +210,7 @@
         }
         
         // Higher threshold - 70 average or 150 peak
-        if (average > 70 || max > 150) {
+        if (average > 85 || max > 150) {
           hasBlown = true;
           blowOutCandles();
         }
