@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Kranky&display=swap" rel="stylesheet">
+
   <title>Happy Birthday</title>
 
   <style>
@@ -71,16 +73,19 @@
 
 <body>
 
+  <!-- START SCREEN -->
   <div class="start-screen" id="startScreen">
     <button class="start-button" id="startButton">
       🎂 ចុចមួយមោកូនពៅ! 🎂
     </button>
   </div>
 
+  <!-- JUMPSCARE VIDEO -->
   <video id="jumpscareVideo" playsinline>
     <source src="jumpscare.mp4" type="video/mp4">
   </video>
 
+  <!-- MAIN CONTENT -->
   <div class="show" id="showDiv"></div>
 
 <script>
@@ -106,16 +111,19 @@ startButton.addEventListener("click", () => {
 
     show.style.display = "flex";
 
+    // 🎵 Birthday music (LOOP FOREVER)
     birthdayAudio = new Audio("happybirthgokgok.mp3");
     birthdayAudio.loop = true;
     birthdayAudio.play();
 
+    // 🎂 Cake
     const cake = document.createElement("img");
     cake.src = "cakeFlame.png";
     cake.className = "image";
     cake.id = "cakeImage";
     show.appendChild(cake);
 
+    // 🕯️ Instruction
     const info = document.createElement("div");
     info.className = "info";
     info.textContent = "ផ្លុំទៀនប្រាដឺ";
@@ -136,7 +144,6 @@ async function startMicrophone() {
   microphone = audioContext.createMediaStreamSource(micStream);
   microphone.connect(analyser);
 
-  // delay to avoid mobile spike
   setTimeout(detectBlow, 1000);
 }
 
@@ -158,9 +165,8 @@ function detectBlow() {
     }
 
     const rms = Math.sqrt(sum / bufferLength);
-    console.log("RMS:", rms.toFixed(3));
 
-    // 🔥 VERY EASY TO BLOW
+    // 🔥 EASY BLOW
     if (rms > 0.10) {
       if (!blowStart) blowStart = performance.now();
       if (performance.now() - blowStart > 200) {
@@ -181,9 +187,12 @@ function detectBlow() {
 /* ================= RESULT ================= */
 function blowOutCandles() {
   document.getElementById("cakeImage").src = "cakeNoflame.png";
-  document.querySelector(".info").textContent = "ហាប់ភីបឺសដេ🎉🎊🍾";
+  document.querySelector(".info").textContent = "ហាប់ភីបឺសដេ 🎉🎊🍾";
 
-  birthdayAudio.pause();
+  // 🎵 DO NOT STOP AUDIO — LET IT LOOP
+  // birthdayAudio.pause(); ❌ removed
+
+  // 🎤 stop mic only
   micStream.getTracks().forEach(t => t.stop());
   microphone.disconnect();
   audioContext.close();
@@ -192,5 +201,3 @@ function blowOutCandles() {
 
 </body>
 </html>
-
-
